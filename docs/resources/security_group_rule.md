@@ -42,7 +42,7 @@ resource "mtncloud_security_group_rule" "ssh" {
 ### Optional
 
 - `destination` (String) Destination matched by the rule; meaning depends on `destination_type`.
-- `destination_port_range` (String) Destination port or range, e.g. `443` or `8000-9000` (0-65535).
+- `destination_port_range` (String) Destination port or range, e.g. `443` or `8000-9000` (0-65535). The API defaults this to `*` when unset.
 - `destination_type` (String) How `destination` is interpreted: `cidr`, `group`, `instance`, or `all`. Defaults to `instance`.
 - `direction` (String) Traffic direction the rule applies to: `ingress` or `egress`. Defaults to `ingress`.
 - `enabled` (Boolean) Whether the rule is active.

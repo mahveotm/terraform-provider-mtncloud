@@ -295,6 +295,41 @@ func maybeBool(value *bool) types.Bool {
 	return types.BoolValue(*value)
 }
 
+// mergeAPIString reconciles an Optional+Computed string with the API response.
+// A non-empty API value always wins (covers backend defaults/normalization). An
+// empty API value keeps the existing configured/prior value rather than nulling
+// it, so the post-apply state never diverges from the plan when the API simply
+// omits the field. Unknown (not yet set) collapses to null.
+func mergeAPIString(existing types.String, apiValue string) types.String {
+	if apiValue != "" {
+		return types.StringValue(apiValue)
+	}
+	if existing.IsUnknown() {
+		return types.StringNull()
+	}
+	return existing
+}
+
+func mergeAPIInt64(existing types.Int64, apiValue *int64) types.Int64 {
+	if apiValue != nil {
+		return types.Int64Value(*apiValue)
+	}
+	if existing.IsUnknown() {
+		return types.Int64Null()
+	}
+	return existing
+}
+
+func mergeAPIBool(existing types.Bool, apiValue *bool) types.Bool {
+	if apiValue != nil {
+		return types.BoolValue(*apiValue)
+	}
+	if existing.IsUnknown() {
+		return types.BoolNull()
+	}
+	return existing
+}
+
 // mergeLabels unions provider default labels with resource labels, preserving
 // order (defaults first) and dropping duplicates and empties.
 func mergeLabels(defaults, resource []string) []string {

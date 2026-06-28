@@ -10,6 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	rschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -63,7 +65,11 @@ func (r *securityGroupRuleResource) Schema(_ context.Context, _ resource.SchemaR
 				Description:   "ID of the security group this rule belongs to. Changing it forces a new rule.",
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
-			"name": rschema.StringAttribute{Optional: true, Description: "Human-readable name for the rule."},
+			"name": rschema.StringAttribute{
+				Optional: true, Computed: true,
+				Description:   "Human-readable name for the rule.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"direction": rschema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString("ingress"),
 				Description: "Traffic direction the rule applies to: `ingress` or `egress`. Defaults to `ingress`.",
@@ -75,43 +81,60 @@ func (r *securityGroupRuleResource) Schema(_ context.Context, _ resource.SchemaR
 				Validators:  []validator.String{stringvalidator.OneOf("accept", "deny")},
 			},
 			"protocol": rschema.StringAttribute{
-				Optional:    true,
-				Description: "IP protocol the rule matches: `tcp`, `udp`, `icmp`, or `any`.",
-				Validators:  []validator.String{stringvalidator.OneOf("tcp", "udp", "icmp", "any")},
+				Optional: true, Computed: true,
+				Description:   "IP protocol the rule matches: `tcp`, `udp`, `icmp`, or `any`.",
+				Validators:    []validator.String{stringvalidator.OneOf("tcp", "udp", "icmp", "any")},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"port_range": rschema.StringAttribute{
-				Optional:    true,
-				Description: "Source port or range, e.g. `22` or `8000-9000` (0-65535).",
-				Validators:  []validator.String{validPortRange()},
+				Optional: true, Computed: true,
+				Description:   "Source port or range, e.g. `22` or `8000-9000` (0-65535).",
+				Validators:    []validator.String{validPortRange()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"destination_port_range": rschema.StringAttribute{
-				Optional:    true,
-				Description: "Destination port or range, e.g. `443` or `8000-9000` (0-65535).",
-				Validators:  []validator.String{validPortRange()},
+				Optional: true, Computed: true,
+				Description:   "Destination port or range, e.g. `443` or `8000-9000` (0-65535). The API defaults this to `*` when unset.",
+				Validators:    []validator.String{validPortRange()},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"source_type": rschema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString("all"),
 				Description: "How `source` is interpreted: `cidr`, `group`, `instance`, or `all`. Defaults to `all`.",
 				Validators:  []validator.String{stringvalidator.OneOf("cidr", "group", "instance", "all")},
 			},
-			"source": rschema.StringAttribute{Optional: true, Description: "Source matched by the rule; meaning depends on `source_type` (e.g. a CIDR like `203.0.113.0/24`)."},
+			"source": rschema.StringAttribute{
+				Optional: true, Computed: true,
+				Description:   "Source matched by the rule; meaning depends on `source_type` (e.g. a CIDR like `203.0.113.0/24`).",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"destination_type": rschema.StringAttribute{
 				Optional: true, Computed: true, Default: stringdefault.StaticString("instance"),
 				Description: "How `destination` is interpreted: `cidr`, `group`, `instance`, or `all`. Defaults to `instance`.",
 				Validators:  []validator.String{stringvalidator.OneOf("cidr", "group", "instance", "all")},
 			},
-			"destination": rschema.StringAttribute{Optional: true, Description: "Destination matched by the rule; meaning depends on `destination_type`."},
+			"destination": rschema.StringAttribute{
+				Optional: true, Computed: true,
+				Description:   "Destination matched by the rule; meaning depends on `destination_type`.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"ethertype": rschema.StringAttribute{
-				Optional:    true,
-				Description: "Ethernet frame type: `IPv4` or `IPv6`.",
-				Validators:  []validator.String{stringvalidator.OneOf("IPv4", "IPv6")},
+				Optional: true, Computed: true,
+				Description:   "Ethernet frame type: `IPv4` or `IPv6`.",
+				Validators:    []validator.String{stringvalidator.OneOf("IPv4", "IPv6")},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"priority": rschema.Int64Attribute{
-				Optional:    true,
-				Description: "Rule evaluation priority; lower values are evaluated first. Must be >= 0.",
-				Validators:  []validator.Int64{int64validator.AtLeast(0)},
+				Optional: true, Computed: true,
+				Description:   "Rule evaluation priority; lower values are evaluated first. Must be >= 0.",
+				Validators:    []validator.Int64{int64validator.AtLeast(0)},
+				PlanModifiers: []planmodifier.Int64{int64planmodifier.UseStateForUnknown()},
 			},
-			"enabled": rschema.BoolAttribute{Optional: true, Description: "Whether the rule is active."},
+			"enabled": rschema.BoolAttribute{
+				Optional: true, Computed: true,
+				Description:   "Whether the rule is active.",
+				PlanModifiers: []planmodifier.Bool{boolplanmodifier.UseStateForUnknown()},
+			},
 		},
 	}
 }
@@ -266,20 +289,24 @@ func ruleInput(data securityGroupRuleResourceModel) client.SecurityGroupRuleInpu
 }
 
 func setRuleState(data *securityGroupRuleResourceModel, rule *client.SecurityGroupRule) {
+	// These attributes are Optional+Computed: the API may normalize them (e.g.
+	// default destination_port_range to "*") or omit them from its response
+	// (e.g. ethertype). For omitted values keep the configured/prior value so we
+	// never produce a state that differs from the plan or churns on every apply.
 	data.ID = types.StringValue(strconv.FormatInt(rule.ID, 10))
-	data.Name = optionalString(rule.Name)
+	data.Name = mergeAPIString(data.Name, rule.Name)
 	data.Direction = types.StringValue(rule.Direction)
 	data.Policy = types.StringValue(rule.Policy)
-	data.Protocol = optionalString(rule.Protocol)
-	data.PortRange = optionalString(rule.PortRange)
-	data.DestinationPortRange = optionalString(rule.DestinationPortRange)
+	data.Protocol = mergeAPIString(data.Protocol, rule.Protocol)
+	data.PortRange = mergeAPIString(data.PortRange, rule.PortRange)
+	data.DestinationPortRange = mergeAPIString(data.DestinationPortRange, rule.DestinationPortRange)
 	data.SourceType = types.StringValue(rule.SourceType)
-	data.Source = optionalString(rule.Source)
+	data.Source = mergeAPIString(data.Source, rule.Source)
 	data.DestinationType = types.StringValue(rule.DestinationType)
-	data.Destination = optionalString(rule.Destination)
-	data.Ethertype = optionalString(rule.Ethertype)
-	data.Priority = maybeInt64(rule.Priority)
-	data.Enabled = maybeBool(rule.Enabled)
+	data.Destination = mergeAPIString(data.Destination, rule.Destination)
+	data.Ethertype = mergeAPIString(data.Ethertype, rule.Ethertype)
+	data.Priority = mergeAPIInt64(data.Priority, rule.Priority)
+	data.Enabled = mergeAPIBool(data.Enabled, rule.Enabled)
 }
 
 func pathRootID() path.Path {
