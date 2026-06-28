@@ -44,7 +44,7 @@ func (r *environmentResource) Schema(_ context.Context, _ resource.SchemaRequest
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud deployment environment (e.g. dev, staging, production).",
 		Attributes: map[string]rschema.Attribute{
-			"id":          rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the environment."},
+			"id":          computedIDAttribute("Numeric identifier of the environment."),
 			"name":        rschema.StringAttribute{Required: true, Description: "Name of the environment."},
 			"description": rschema.StringAttribute{Optional: true, Computed: true, Description: "Human-readable description of the environment."},
 			"code":        rschema.StringAttribute{Optional: true, Computed: true, Description: "Short code identifying the environment."},

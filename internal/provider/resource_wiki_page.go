@@ -60,7 +60,7 @@ func (r *wikiPageResource) Schema(_ context.Context, _ resource.SchemaRequest, r
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud wiki page.",
 		Attributes: map[string]rschema.Attribute{
-			"id":       rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the wiki page."},
+			"id":       computedIDAttribute("Numeric identifier of the wiki page."),
 			"name":     rschema.StringAttribute{Required: true, Description: "Name (title) of the wiki page."},
 			"category": rschema.StringAttribute{Optional: true, Computed: true, Description: "Category the wiki page belongs to."},
 			"content": rschema.StringAttribute{

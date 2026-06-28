@@ -42,7 +42,7 @@ func (r *keyPairResource) Schema(_ context.Context, _ resource.SchemaRequest, re
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud SSH key pair. Key pairs are immutable; any change forces a new resource.",
 		Attributes: map[string]rschema.Attribute{
-			"id":         rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the key pair."},
+			"id":         computedIDAttribute("Numeric identifier of the key pair."),
 			"name":       rschema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Name of the key pair. Changing it forces a new key pair."},
 			"public_key": rschema.StringAttribute{Required: true, PlanModifiers: replace, Description: "The public key material. Changing it forces a new key pair."},
 			"private_key": rschema.StringAttribute{

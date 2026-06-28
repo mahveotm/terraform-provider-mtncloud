@@ -51,7 +51,7 @@ func (r *scaleThresholdResource) Schema(_ context.Context, _ resource.SchemaRequ
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud autoscale threshold (CPU/memory/disk based scaling rules).",
 		Attributes: map[string]rschema.Attribute{
-			"id":                      rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the scale threshold."},
+			"id":                      computedIDAttribute("Numeric identifier of the scale threshold."),
 			"name":                    rschema.StringAttribute{Required: true, Description: "Name of the scale threshold."},
 			"auto_upscale":            rschema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), Description: "Whether to automatically scale up. Defaults to `false`."},
 			"auto_downscale":          rschema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), Description: "Whether to automatically scale down. Defaults to `false`."},

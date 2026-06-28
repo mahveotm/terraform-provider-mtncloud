@@ -39,7 +39,7 @@ func (r *securityGroupResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud security group.",
 		Attributes: map[string]rschema.Attribute{
-			"id":          rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the security group."},
+			"id":          computedIDAttribute("Numeric identifier of the security group."),
 			"name":        rschema.StringAttribute{Required: true, Description: "Name of the security group."},
 			"description": rschema.StringAttribute{Optional: true, Description: "Human-readable description of the security group."},
 			"active":      rschema.BoolAttribute{Computed: true, Description: "Whether the security group is active."},

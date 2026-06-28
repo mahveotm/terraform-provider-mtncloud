@@ -45,7 +45,7 @@ func (r *ipPoolResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	resp.Schema = rschema.Schema{
 		Description: "Manages a Morpheus-managed IPv4 address pool in MTN Cloud.",
 		Attributes: map[string]rschema.Attribute{
-			"id":         rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the IP pool."},
+			"id":         computedIDAttribute("Numeric identifier of the IP pool."),
 			"name":       rschema.StringAttribute{Required: true, Description: "Name of the IP pool."},
 			"gateway":    rschema.StringAttribute{Optional: true, Computed: true, Description: "Gateway IP address for the pool."},
 			"netmask":    rschema.StringAttribute{Optional: true, Computed: true, Description: "Netmask for the pool."},

@@ -59,7 +59,7 @@ func (r *securityGroupRuleResource) Schema(_ context.Context, _ resource.SchemaR
 	resp.Schema = rschema.Schema{
 		Description: "Manages a rule in an MTN Cloud security group.",
 		Attributes: map[string]rschema.Attribute{
-			"id": rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the rule."},
+			"id": computedIDAttribute("Numeric identifier of the rule."),
 			"security_group_id": rschema.StringAttribute{
 				Required:      true,
 				Description:   "ID of the security group this rule belongs to. Changing it forces a new rule.",

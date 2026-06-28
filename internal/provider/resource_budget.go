@@ -8,7 +8,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	rschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -49,10 +51,14 @@ func (r *budgetResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud cost budget over a yearly period at a chosen interval.",
 		Attributes: map[string]rschema.Attribute{
-			"id":          rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the budget."},
-			"name":        rschema.StringAttribute{Required: true, Description: "Name of the budget."},
-			"description": rschema.StringAttribute{Optional: true, Computed: true, Description: "Description of the budget."},
-			"enabled":     rschema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), Description: "Whether the budget is enabled. Defaults to `true`."},
+			"id":   computedIDAttribute("Numeric identifier of the budget."),
+			"name": rschema.StringAttribute{Required: true, Description: "Name of the budget."},
+			"description": rschema.StringAttribute{
+				Optional: true, Computed: true,
+				Description:   "Description of the budget.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
+			"enabled": rschema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), Description: "Whether the budget is enabled. Defaults to `true`."},
 			"scope": rschema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
@@ -66,9 +72,17 @@ func (r *budgetResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 				Validators:  []validator.String{stringvalidator.OneOf("year", "quarter", "month")},
 				Description: "Budget interval. One of `year` (1 cost), `quarter` (4 costs), `month` (12 costs). The length of `costs` must match. Defaults to `year`.",
 			},
-			"year":     rschema.StringAttribute{Optional: true, Computed: true, Description: "Calendar year the budget applies to, e.g. `2026`."},
+			"year": rschema.StringAttribute{
+				Optional: true, Computed: true,
+				Description:   "Calendar year the budget applies to, e.g. `2026`.",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
 			"timezone": rschema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("UTC"), Description: "Timezone for the budget period. Defaults to `UTC`."},
-			"currency": rschema.StringAttribute{Optional: true, Computed: true, Default: stringdefault.StaticString("USD"), Description: "Currency code for the budget amounts. Defaults to `USD`."},
+			"currency": rschema.StringAttribute{
+				Computed:      true,
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+				Description:   "Currency code for the budget amounts. Set by MTN Cloud to the account currency (the budget API ignores any requested currency), so this is read-only.",
+			},
 			"rollover": rschema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(false), Description: "Whether unused budget rolls over between intervals. Defaults to `false`."},
 			"costs": rschema.ListAttribute{
 				Required:    true,
@@ -105,8 +119,24 @@ func (r *budgetResource) Create(ctx context.Context, req resource.CreateRequest,
 		opError(&resp.Diagnostics, "Create", "Budget", err)
 		return
 	}
+	budget = r.authoritative(ctx, budget)
 	setBudgetState(&plan, budget)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+// authoritative re-reads a budget via the single-object GET after a create or
+// update. The MTN Cloud budget mutation (and list) responses echo a placeholder
+// currency of "USD", while GET /budgets/{id} returns the real account currency.
+// Re-reading keeps state consistent with what Read will see on the next refresh.
+// On any read error the original mutation result is returned unchanged.
+func (r *budgetResource) authoritative(ctx context.Context, budget *client.Budget) *client.Budget {
+	if budget == nil {
+		return budget
+	}
+	if fresh, err := r.client.GetBudget(ctx, budget.ID); err == nil {
+		return fresh
+	}
+	return budget
 }
 
 func (r *budgetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -142,6 +172,7 @@ func (r *budgetResource) Update(ctx context.Context, req resource.UpdateRequest,
 		opError(&resp.Diagnostics, "Update", "Budget", err)
 		return
 	}
+	budget = r.authoritative(ctx, budget)
 	setBudgetState(&plan, budget)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }

@@ -48,7 +48,7 @@ func (r *networkDomainResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud network (DNS / Active Directory) domain.",
 		Attributes: map[string]rschema.Attribute{
-			"id":          rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the network domain."},
+			"id":          computedIDAttribute("Numeric identifier of the network domain."),
 			"name":        rschema.StringAttribute{Required: true, Description: "Name of the network domain."},
 			"description": rschema.StringAttribute{Optional: true, Computed: true, Description: "Description of the network domain."},
 			"fqdn":        rschema.StringAttribute{Optional: true, Computed: true, Description: "Fully qualified domain name."},

@@ -53,7 +53,7 @@ func (r *storageBucketResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud S3-compatible storage bucket.",
 		Attributes: map[string]rschema.Attribute{
-			"id":          rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the storage bucket."},
+			"id":          computedIDAttribute("Numeric identifier of the storage bucket."),
 			"name":        rschema.StringAttribute{Required: true, Description: "Unique storage bucket name in MTN Cloud."},
 			"bucket_name": rschema.StringAttribute{Required: true, Description: "Backing S3 bucket name."},
 			"access_key":  rschema.StringAttribute{Required: true, Sensitive: true, Description: "S3 access key."},

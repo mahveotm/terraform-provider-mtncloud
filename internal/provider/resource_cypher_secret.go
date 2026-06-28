@@ -43,7 +43,7 @@ func (r *cypherSecretResource) Schema(_ context.Context, _ resource.SchemaReques
 	resp.Schema = rschema.Schema{
 		Description: "Manages a secret in the MTN Cloud Cypher store (under the `secret/` mount). Secrets are immutable; any change forces a new resource.",
 		Attributes: map[string]rschema.Attribute{
-			"id":  rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the cypher entry."},
+			"id":  computedIDAttribute("Numeric identifier of the cypher entry."),
 			"key": rschema.StringAttribute{Required: true, PlanModifiers: replaceString, Description: "The secret path under the `secret/` mount, e.g. `myapp/db-password`. Changing it forces a new secret."},
 			"value": rschema.StringAttribute{
 				Required:      true,

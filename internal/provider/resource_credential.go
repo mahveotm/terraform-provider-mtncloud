@@ -63,7 +63,7 @@ func (r *credentialResource) Schema(_ context.Context, _ resource.SchemaRequest,
 	resp.Schema = rschema.Schema{
 		Description: "Manages an entry in the MTN Cloud credential store. Secret fields are write-only; the API never returns them.",
 		Attributes: map[string]rschema.Attribute{
-			"id":   rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the credential."},
+			"id":   computedIDAttribute("Numeric identifier of the credential."),
 			"name": rschema.StringAttribute{Required: true, Description: "Name of the credential."},
 			"type": rschema.StringAttribute{
 				Required:      true,

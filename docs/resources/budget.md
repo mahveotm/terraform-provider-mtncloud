@@ -42,7 +42,6 @@ resource "mtncloud_budget" "annual" {
 
 ### Optional
 
-- `currency` (String) Currency code for the budget amounts. Defaults to `USD`.
 - `description` (String) Description of the budget.
 - `enabled` (Boolean) Whether the budget is enabled. Defaults to `true`.
 - `interval` (String) Budget interval. One of `year` (1 cost), `quarter` (4 costs), `month` (12 costs). The length of `costs` must match. Defaults to `year`.
@@ -53,4 +52,5 @@ resource "mtncloud_budget" "annual" {
 
 ### Read-Only
 
+- `currency` (String) Currency code for the budget amounts. Set by MTN Cloud to the account currency (the budget API ignores any requested currency), so this is read-only.
 - `id` (String) Numeric identifier of the budget.

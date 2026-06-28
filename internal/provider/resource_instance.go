@@ -85,7 +85,7 @@ func (r *instanceResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud compute instance using human-friendly provisioning inputs.",
 		Attributes: map[string]rschema.Attribute{
-			"id":                     rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the instance."},
+			"id":                     computedIDAttribute("Numeric identifier of the instance."),
 			"name":                   rschema.StringAttribute{Required: true, PlanModifiers: replaceString, Description: "Name of the instance. Changing it forces a new instance."},
 			"group":                  rschema.StringAttribute{Optional: true, Computed: true, PlanModifiers: inheritString, Description: "Group/site name. Defaults to the provider's `group`. Changing it forces a new instance."},
 			"type":                   rschema.StringAttribute{Required: true, PlanModifiers: replaceString, Description: "Instance type code (e.g. `MTN-CS10`). Changing it forces a new instance."},

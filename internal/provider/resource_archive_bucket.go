@@ -51,7 +51,7 @@ func (r *archiveBucketResource) Schema(_ context.Context, _ resource.SchemaReque
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud archive bucket backed by a storage provider.",
 		Attributes: map[string]rschema.Attribute{
-			"id":               rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the archive bucket."},
+			"id":               computedIDAttribute("Numeric identifier of the archive bucket."),
 			"name":             rschema.StringAttribute{Required: true, Description: "Globally unique archive bucket name."},
 			"storage_provider": rschema.StringAttribute{Required: true, PlanModifiers: replaceString, Description: "Storage bucket name that backs this archive bucket. Changing it forces a new archive bucket."},
 			"description":      rschema.StringAttribute{Optional: true, Description: "Human-readable description of the archive bucket."},

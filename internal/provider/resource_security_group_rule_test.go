@@ -23,7 +23,7 @@ func TestAccSecurityGroupRule_ethertypeAndDefaultedDestPort(t *testing.T) {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccSecurityGroupRuleConfig(name),
+				Config: testAccSecurityGroupRuleConfig(name, "22"),
 				Check: resource.ComposeAggregateTestCheckFunc(
 					// ethertype must survive even though the API may omit it.
 					resource.TestCheckResourceAttr("mtncloud_security_group_rule.test", "ethertype", "IPv4"),
@@ -40,19 +40,22 @@ func TestAccSecurityGroupRule_ethertypeAndDefaultedDestPort(t *testing.T) {
 				},
 			},
 			{
-				// Re-applying the same config must be a no-op (no perpetual diff).
-				Config: testAccSecurityGroupRuleConfig(name),
+				// In-place update (change port_range). This exercises Update, which
+				// previously failed parsing an unknown plan.ID once the id attribute
+				// pins through UseStateForUnknown.
+				Config: testAccSecurityGroupRuleConfig(name, "2222"),
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
-						plancheck.ExpectEmptyPlan(),
+						plancheck.ExpectResourceAction("mtncloud_security_group_rule.test", plancheck.ResourceActionUpdate),
 					},
+					PostApplyPostRefresh: []plancheck.PlanCheck{plancheck.ExpectEmptyPlan()},
 				},
 			},
 		},
 	})
 }
 
-func testAccSecurityGroupRuleConfig(name string) string {
+func testAccSecurityGroupRuleConfig(name, portRange string) string {
 	return fmt.Sprintf(`
 resource "mtncloud_security_group" "test" {
   name        = %[1]q
@@ -64,10 +67,10 @@ resource "mtncloud_security_group_rule" "test" {
 
   direction   = "ingress"
   protocol    = "tcp"
-  port_range  = "22"
+  port_range  = %[2]q
   ethertype   = "IPv4"
   source_type = "cidr"
   source      = "0.0.0.0/0"
 }
-`, name)
+`, name, portRange)
 }

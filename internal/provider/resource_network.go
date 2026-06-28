@@ -71,7 +71,7 @@ func (r *networkResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 	resp.Schema = rschema.Schema{
 		Description: "Manages an MTN Cloud network using human-friendly group/zone/type/pool names.",
 		Attributes: map[string]rschema.Attribute{
-			"id":            rschema.StringAttribute{Computed: true, Description: "Numeric identifier of the network."},
+			"id":            computedIDAttribute("Numeric identifier of the network."),
 			"name":          rschema.StringAttribute{Required: true, Description: "Name of the network."},
 			"group":         rschema.StringAttribute{Optional: true, Computed: true, PlanModifiers: inheritString, Description: "Group/site name. Defaults to the provider's `group`. The group's first cloud is used as the network's zone (see cloud_id). Changing it forces a new network."},
 			"type":          rschema.StringAttribute{Optional: true, PlanModifiers: replaceString, Description: "Network type name or code (e.g. an OpenStack network type). Changing it forces a new network."},
