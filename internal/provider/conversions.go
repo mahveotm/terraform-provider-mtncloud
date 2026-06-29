@@ -1,6 +1,11 @@
 package provider
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // Conversion helpers between framework types and Go values. Two directions:
 //   *Ptr   : framework value -> *Go (nil when null/unknown), for request payloads.
@@ -104,6 +109,23 @@ func mergeAPIFloat64(existing types.Float64, apiValue *float64) types.Float64 {
 		return types.Float64Null()
 	}
 	return existing
+}
+
+// int64Set converts a framework Set of Int64 to a Go slice. A null/unknown set
+// yields nil so the request payload omits the field entirely.
+func int64Set(ctx context.Context, value types.Set) []int64 {
+	if value.IsNull() || value.IsUnknown() {
+		return nil
+	}
+	var out []int64
+	value.ElementsAs(ctx, &out, false)
+	return out
+}
+
+// int64SetValue converts a Go slice of IDs to a framework Set of Int64 (used by
+// data sources to expose relational id collections).
+func int64SetValue(ctx context.Context, ids []int64) (types.Set, diag.Diagnostics) {
+	return types.SetValueFrom(ctx, types.Int64Type, ids)
 }
 
 // mergeLabels unions provider default labels with resource labels, preserving

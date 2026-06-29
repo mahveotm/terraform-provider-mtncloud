@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Monitoring resources and matching lookup data sources: `mtncloud_contact`,
+  `mtncloud_monitoring_check`, `mtncloud_monitoring_group`, and
+  `mtncloud_monitoring_alert`, with client support for `/monitoring/*`, payload
+  unit tests, generated docs/examples, sweepers, and acceptance tests.
+
+### Fixed
+
+- `mtncloud_contact` notification fields can now be cleared on update by sending
+  empty channel values instead of preserving prior API state.
+
 ## [0.2.12] - 2026-06-29
 
 ### Added

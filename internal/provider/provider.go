@@ -204,6 +204,10 @@ func (p *mtnCloudProvider) Resources(_ context.Context) []func() resource.Resour
 		NewRoleResource,
 		NewUserResource,
 		NewUserGroupResource,
+		NewContactResource,
+		NewMonitoringCheckResource,
+		NewMonitoringGroupResource,
+		NewMonitoringAlertResource,
 	}
 }
 
@@ -232,6 +236,10 @@ func (p *mtnCloudProvider) DataSources(_ context.Context) []func() datasource.Da
 		NewRoleDataSource,
 		NewUserDataSource,
 		NewUserGroupDataSource,
+		NewContactDataSource,
+		NewMonitoringCheckDataSource,
+		NewMonitoringGroupDataSource,
+		NewMonitoringAlertDataSource,
 	}
 }
 
