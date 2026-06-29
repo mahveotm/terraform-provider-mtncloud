@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.8] - 2026-06-29
+
 ### Added
 
 - Automation resources and matching lookup data sources: `mtncloud_task`
@@ -19,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with unit tests covering payload shapes and the job `scheduleMode` encoding.
 - Generated documentation, examples, sweepers, and acceptance tests (including a
   rename guard that asserts name changes update in place rather than recreate).
+
+### Fixed
+
+- Documentation generation now uses the provider's published
+  `mahveotm/mtncloud` namespace instead of relying on the `tfplugindocs`
+  default HashiCorp namespace.
 
 ## [0.2.7] - 2026-06-29
 
@@ -79,6 +87,7 @@ Initial release of the MTN Cloud Terraform provider.
   network errors on GETs only) honoring `Retry-After`.
 - Import support for all resources via `terraform import`.
 
-[Unreleased]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.7...HEAD
+[Unreleased]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.8...HEAD
+[0.2.8]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.7...v0.2.8
 [0.2.7]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.1.0...v0.2.7
 [0.1.0]: https://github.com/mahveotm/terraform-provider-mtncloud/releases/tag/v0.1.0
