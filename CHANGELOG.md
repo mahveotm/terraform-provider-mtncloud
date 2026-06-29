@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.7] - 2026-06-29
+
+### Added
+
+- New resources and matching data sources for budgets, credentials, Cypher
+  secrets, environments, IPv4 IP pools, key pairs, network domains, scale
+  thresholds, and wiki pages.
+- Client support for the new MTN Cloud API areas, including shared query helpers.
+- Generated documentation and examples for the new resources and data sources.
+- Architecture and contribution documentation for provider development.
+- Provider, resource, client, sweep, and acceptance-test helpers covering the
+  expanded provider surface.
+
+### Changed
+
+- Refactored provider configuration, resource/data-source wiring, framework value
+  conversions, and diagnostics into shared helpers.
+- Standardized computed resource IDs with `UseStateForUnknown` to avoid update
+  plans losing known IDs.
+- Improved security group rule state handling for API-defaulted or omitted fields
+  to reduce apply churn.
+- Updated CI/release tooling and dependency versions, including Terraform plugin
+  framework packages, GoReleaser, GitHub Actions, golangci-lint, and gRPC.
+
+### Fixed
+
+- Release workflow reruns now replace release assets to avoid stale checksum
+  artifacts.
+
 ## [0.1.0] - 2026-06-28
 
 Initial release of the MTN Cloud Terraform provider.
@@ -37,5 +66,6 @@ Initial release of the MTN Cloud Terraform provider.
   network errors on GETs only) honoring `Retry-After`.
 - Import support for all resources via `terraform import`.
 
-[Unreleased]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.7...HEAD
+[0.2.7]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.1.0...v0.2.7
 [0.1.0]: https://github.com/mahveotm/terraform-provider-mtncloud/releases/tag/v0.1.0
