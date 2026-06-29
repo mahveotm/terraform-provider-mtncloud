@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Automation resources and matching lookup data sources: `mtncloud_task`
+  (single type-discriminated resource covering shell, python, ansible, powershell,
+  email, and restart tasks, with per-type config validation), `mtncloud_workflow`
+  (operational and provisioning task-sets with ordered member tasks),
+  `mtncloud_execute_schedule` (cron schedules), and `mtncloud_job` (run a workflow
+  or task on a schedule against instance targets).
+- Client support for `/tasks`, `/task-sets`, `/execute-schedules`, and `/jobs`,
+  with unit tests covering payload shapes and the job `scheduleMode` encoding.
+- Generated documentation, examples, sweepers, and acceptance tests (including a
+  rename guard that asserts name changes update in place rather than recreate).
+
 ## [0.2.7] - 2026-06-29
 
 ### Added

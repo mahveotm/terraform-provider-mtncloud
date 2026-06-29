@@ -73,4 +73,16 @@ func init() {
 	registerSweeper("mtncloud_key_pair", (*client.Client).ListKeyPairs,
 		func(x client.KeyPair) int64 { return x.ID }, func(x client.KeyPair) string { return x.Name },
 		(*client.Client).DeleteKeyPair)
+	registerSweeper("mtncloud_task", (*client.Client).ListTasks,
+		func(x client.Task) int64 { return x.ID }, func(x client.Task) string { return x.Name },
+		(*client.Client).DeleteTask)
+	registerSweeper("mtncloud_workflow", (*client.Client).ListWorkflows,
+		func(x client.Workflow) int64 { return x.ID }, func(x client.Workflow) string { return x.Name },
+		(*client.Client).DeleteWorkflow)
+	registerSweeper("mtncloud_execute_schedule", (*client.Client).ListExecuteSchedules,
+		func(x client.ExecuteSchedule) int64 { return x.ID }, func(x client.ExecuteSchedule) string { return x.Name },
+		(*client.Client).DeleteExecuteSchedule)
+	registerSweeper("mtncloud_job", (*client.Client).ListJobs,
+		func(x client.Job) int64 { return x.ID }, func(x client.Job) string { return x.Name },
+		(*client.Client).DeleteJob)
 }

@@ -197,6 +197,10 @@ func (p *mtnCloudProvider) Resources(_ context.Context) []func() resource.Resour
 		NewIPPoolResource,
 		NewScaleThresholdResource,
 		NewBudgetResource,
+		NewTaskResource,
+		NewWorkflowResource,
+		NewExecuteScheduleResource,
+		NewJobResource,
 	}
 }
 
@@ -218,6 +222,10 @@ func (p *mtnCloudProvider) DataSources(_ context.Context) []func() datasource.Da
 		NewIPPoolDataSource,
 		NewScaleThresholdDataSource,
 		NewBudgetDataSource,
+		NewTaskDataSource,
+		NewWorkflowDataSource,
+		NewExecuteScheduleDataSource,
+		NewJobDataSource,
 	}
 }
 
