@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.13] - 2026-06-29
+
 ### Added
 
 - Monitoring resources and matching lookup data sources: `mtncloud_contact`,
@@ -128,7 +130,8 @@ Initial release of the MTN Cloud Terraform provider.
   network errors on GETs only) honoring `Retry-After`.
 - Import support for all resources via `terraform import`.
 
-[Unreleased]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.12...HEAD
+[Unreleased]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.13...HEAD
+[0.2.13]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.12...v0.2.13
 [0.2.12]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/mahveotm/terraform-provider-mtncloud/compare/v0.2.9...v0.2.10
