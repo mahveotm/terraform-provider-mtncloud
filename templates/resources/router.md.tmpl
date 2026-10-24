@@ -1,0 +1,48 @@
+---
+page_title: "{{.Name}} {{.Type}} - {{.RenderedProviderName}}"
+subcategory: "Networking"
+description: |-
+{{ .Description | plainmarkdown | trimspace | prefixlines "  " }}
+---
+
+# {{.Name}} ({{.Type}})
+
+{{ .Description | trimspace }}
+
+{{ if .HasExample -}}
+## Example Usage
+
+{{tffile .ExampleFile }}
+{{- end }}
+
+## Type-specific configuration
+
+First inspect `jsondecode(data.mtncloud_router_types.available.types_json)`.
+Choose a creatable type and use its `optionTypes` metadata to construct
+`options_json`, a JSON object merged directly into `networkRouter` in the create
+request. Use the nested API payload shape; do not assume option names from a
+different router backend apply to your account.
+
+Only `name` and `enabled` update in place. Changes to scope, type, or
+`options_json` replace the router. Options are not read back, so Terraform cannot
+detect remote changes to them. Import does not recover them; adding options to an
+imported router proposes replacement. Review the plan before applying.
+
+For cloud-backed types, `cloud_id` must belong to the selected group. It can be
+omitted only when that group has exactly one cloud. For types with
+`hasNetworkServer=true`, set `network_server_id` instead. Provider resource-pool
+and availability-zone defaults are not used for routers.
+
+Creation records the returned ID and reads the router but does not wait for
+backend readiness. This resource does not separately manage router interfaces,
+NAT rules, routes, or firewall rules. Type-specific options and permissions must
+be verified against your MTN Cloud deployment before production use.
+
+{{ .SchemaMarkdown | trimspace }}
+{{ if .HasImport }}
+## Import
+
+Import is supported using the following syntax:
+
+{{codefile "shell" .ImportFile }}
+{{- end }}

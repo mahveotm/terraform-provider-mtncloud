@@ -184,6 +184,7 @@ func (p *mtnCloudProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		NewInstanceResource,
 		NewNetworkResource,
+		NewRouterResource,
 		NewSecurityGroupResource,
 		NewSecurityGroupRuleResource,
 		NewStorageBucketResource,
@@ -214,6 +215,7 @@ func (p *mtnCloudProvider) Resources(_ context.Context) []func() resource.Resour
 func (p *mtnCloudProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		NewGroupDataSource,
+		NewRouterTypesDataSource,
 		NewInstanceTypeDataSource,
 		NewNetworkDataSource,
 		NewResourcePoolDataSource,

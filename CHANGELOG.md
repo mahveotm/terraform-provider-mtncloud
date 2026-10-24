@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `mtncloud_router` for router creation, reads, name/enabled updates, deletion,
+  and import, plus `mtncloud_router_types` for account-specific type discovery.
+  Type-specific creation fields use sensitive `options_json`; changing them
+  replaces the router. Remote drift in these fields is not tracked.
+
+
 ## [0.2.13] - 2026-06-29
 
 ### Added
