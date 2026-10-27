@@ -1,16 +1,12 @@
-# Discover the actual type code and its options using mtncloud_router_types.
-# This variable must identify a creatable type without a network server.
-variable "router_type" {
-  type        = string
-  description = "Router type code available in your account."
-}
-
+# MTN selects its neutronRouter backend automatically.
 resource "mtncloud_router" "app" {
-  name  = "app-router"
-  group = "MTNNG_CLOUD_AZ_1"
-  type  = var.router_type
+  name          = "app-router"
+  group         = "MTNNG_CLOUD_AZ_1"
+  resource_pool = "my-project"
 
-  # Set cloud_id if the group has more than one cloud.
-  # Supply any required type-specific options using options_json = jsonencode({...}).
-  # Use the API optionTypes metadata; option names vary by backend.
+  # Morpheus subnet IDs belonging to the selected MTN resource pool.
+  internal_subnet_ids = [123]
+
+  # Optional Morpheus external network ID for an external gateway.
+  # external_network_id = 34
 }

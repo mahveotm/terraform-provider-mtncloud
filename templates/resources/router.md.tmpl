@@ -15,28 +15,28 @@ description: |-
 {{tffile .ExampleFile }}
 {{- end }}
 
-## Type-specific configuration
+## MTN Cloud configuration
 
-First inspect `jsondecode(data.mtncloud_router_types.available.types_json)`.
-Choose a creatable type and use its `optionTypes` metadata to construct
-`options_json`, a JSON object merged directly into `networkRouter` in the create
-request. Use the nested API payload shape; do not assume option names from a
-different router backend apply to your account.
+This resource supports only MTN's `neutronRouter` offering. The backend type is
+selected automatically; there is no router-type selector or generic JSON input.
 
-Only `name` and `enabled` update in place. Changes to scope, type, or
-`options_json` replace the router. Options are not read back, so Terraform cannot
-detect remote changes to them. Import does not recover them; adding options to an
-imported router proposes replacement. Review the plan before applying.
+Set a group and resource pool on this resource or inherit them from the provider.
+`internal_subnet_ids` contains Morpheus subnet IDs, not network IDs or OpenStack
+UUIDs. These subnets must belong to the selected resource pool. Optionally set
+`external_network_id` to a Morpheus external network ID.
 
-For cloud-backed types, `cloud_id` must belong to the selected group. It can be
-omitted only when that group has exactly one cloud. For types with
-`hasNetworkServer=true`, set `network_server_id` instead. Provider resource-pool
-and availability-zone defaults are not used for routers.
+When a group has multiple clouds, set `cloud_id` explicitly. The provider resolves
+the resource pool within that cloud and sends MTN's `pool-<id>` code in
+`config.poolId`, which the REST provisioning backend requires.
 
-Creation records the returned ID and reads the router but does not wait for
-backend readiness. This resource does not separately manage router interfaces,
-NAT rules, routes, or firewall rules. Type-specific options and permissions must
-be verified against your MTN Cloud deployment before production use.
+Configuration changes replace the router. Creation waits up to five minutes for
+a ready backend status and reports failed provisioning. Deletion waits up to five
+minutes for the router to disappear. The ID is saved before waiting, so a failed
+create can still be cleaned up with Terraform.
+
+Import reads attached subnet and pool information from the router's internal
+networks. Routers without internal subnet attachments cannot be fully reconstructed
+for this resource. Separate NAT, route, and firewall-rule management is not included.
 
 {{ .SchemaMarkdown | trimspace }}
 {{ if .HasImport }}

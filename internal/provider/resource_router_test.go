@@ -12,7 +12,7 @@ import (
 )
 
 // Exercise Terraform's plan/state contract against the documented API shapes,
-// including import and an in-place update. No live MTN infrastructure is used.
+// including import and refresh. No live MTN infrastructure is used.
 func TestRouterLifecycleWithMockAPI(t *testing.T) {
 	t.Setenv("MTN_CLOUD_USERNAME", "")
 	t.Setenv("MTN_CLOUD_PASSWORD", "")
@@ -28,30 +28,30 @@ func TestRouterLifecycleWithMockAPI(t *testing.T) {
 		case "GET /api/groups", "GET /api/groups/4":
 			fmt.Fprint(w, `{"groups":[{"id":4,"name":"group","zones":[{"id":8}]}],"group":{"id":4,"name":"group","zones":[{"id":8}]}}`)
 		case "GET /api/network-router-types":
-			fmt.Fprint(w, `{"networkRouterTypes":[{"id":2,"code":"neutron","name":"Neutron"}]}`)
+			fmt.Fprint(w, `{"networkRouterTypes":[{"id":2,"code":"neutronRouter","name":"Neutron Router"}]}`)
 		case "GET /api/network-router-types/2":
-			fmt.Fprint(w, `{"networkRouterType":{"id":2,"code":"neutron","name":"Neutron","creatable":true,"hasNetworkServer":false,"optionTypes":[]}}`)
+			fmt.Fprint(w, `{"networkRouterType":{"id":2,"code":"neutronRouter","name":"Neutron Router","creatable":true,"hasNetworkServer":false,"optionTypes":[]}}`)
+		case "GET /api/options/zonePools":
+			fmt.Fprint(w, `{"data":[{"id":208,"name":"project","value":"pool-208"}]}`)
+		case "GET /api/networks/7":
+			fmt.Fprint(w, `{"network":{"zonePool":{"id":208,"name":"project"},"subnets":[{"id":9,"cidr":"10.1.0.0/24"}]}}`)
 		case "POST /api/networks/routers":
+			var payload struct {
+				Router map[string]json.RawMessage `json:"networkRouter"`
+			}
+			if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+				t.Error(err)
+			}
+			if string(payload.Router["poolId"]) != `"pool-208"` || string(payload.Router["config"]) != `{"poolId":"pool-208"}` || string(payload.Router["type"]) != `{"id":2}` {
+				t.Errorf("unexpected MTN router payload: %s", payload.Router)
+			}
 			fmt.Fprint(w, `{"success":true,"id":42}`)
 		case "GET /api/networks/routers/42":
 			if deleted {
 				http.NotFound(w, r)
 				return
 			}
-			_ = json.NewEncoder(w).Encode(map[string]any{"networkRouter": map[string]any{"id": 42, "name": name, "enabled": enabled, "status": "available", "type": map[string]any{"id": 2, "code": "neutron", "name": "Neutron"}, "site": map[string]any{"id": 4, "name": "group"}, "zone": map[string]any{"id": 8}}})
-		case "PUT /api/networks/routers/42":
-			var body struct {
-				Router struct {
-					Name    string `json:"name"`
-					Enabled bool   `json:"enabled"`
-				} `json:"networkRouter"`
-			}
-			if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
-				t.Error(err)
-			}
-			name = body.Router.Name
-			enabled = body.Router.Enabled
-			fmt.Fprint(w, `{"success":true}`)
+			_ = json.NewEncoder(w).Encode(map[string]any{"networkRouter": map[string]any{"id": 42, "name": name, "enabled": enabled, "status": "available", "type": map[string]any{"id": 2, "code": "neutronRouter", "name": "Neutron Router"}, "site": map[string]any{"id": 4, "name": "group"}, "zone": map[string]any{"id": 8}, "interfaces": []map[string]any{{"cidr": "10.1.0.0/24", "network": map[string]any{"id": 7}}}}})
 		case "DELETE /api/networks/routers/42":
 			deleted = true
 			fmt.Fprint(w, `{"success":true}`)
@@ -67,13 +67,14 @@ provider "mtncloud" {
  url = %q
  token = "test"
  group = "group"
+ resource_pool = "pool-208"
 }
-data "mtncloud_router_types" "all" {}
+
 resource "mtncloud_router" "app" {
  name = %q
- type = "neutron"
+ internal_subnet_ids = [9]
  enabled = %t
- options_json = jsonencode({config = {enableSnat = false}})
+
 }
 `, server.URL, name, enabled)
 	}
@@ -81,8 +82,7 @@ resource "mtncloud_router" "app" {
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{Config: config("app", true), Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("mtncloud_router.app", "id", "42"), resource.TestCheckResourceAttr("mtncloud_router.app", "cloud_id", "8"), resource.TestCheckResourceAttr("mtncloud_router.app", "group", "group"))},
-			{ResourceName: "mtncloud_router.app", ImportState: true, ImportStateVerify: true, ImportStateVerifyIgnore: []string{"options_json"}},
-			{Config: config("renamed", false), Check: resource.TestCheckResourceAttr("mtncloud_router.app", "enabled", "false")},
+			{ResourceName: "mtncloud_router.app", ImportState: true, ImportStateVerify: true},
 		},
 	})
 }

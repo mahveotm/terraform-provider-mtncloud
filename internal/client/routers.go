@@ -5,7 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 )
+
+const MTNRouterTypeCode = "neutronRouter"
 
 type RouterRef struct {
 	ID   int64  `json:"id"`
@@ -14,15 +18,34 @@ type RouterRef struct {
 }
 
 type Router struct {
-	ID            int64     `json:"id"`
-	Name          string    `json:"name"`
-	Enabled       bool      `json:"enabled"`
-	Status        string    `json:"status"`
-	ExternalIP    string    `json:"externalIp"`
-	Type          RouterRef `json:"type"`
-	Site          RouterRef `json:"site"`
-	Zone          RouterRef `json:"zone"`
-	NetworkServer RouterRef `json:"networkServer"`
+	ID              int64             `json:"id"`
+	Name            string            `json:"name"`
+	Enabled         bool              `json:"enabled"`
+	Status          string            `json:"status"`
+	ExternalIP      string            `json:"externalIp"`
+	Type            RouterRef         `json:"type"`
+	Site            RouterRef         `json:"site"`
+	Zone            RouterRef         `json:"zone"`
+	NetworkServer   RouterRef         `json:"networkServer"`
+	ExternalNetwork RouterRef         `json:"externalNetwork"`
+	Interfaces      []RouterInterface `json:"interfaces"`
+}
+
+type RouterInterface struct {
+	CIDR    string    `json:"cidr"`
+	Network RouterRef `json:"network"`
+}
+
+type RouterNetwork struct {
+	ZonePool RouterRef `json:"zonePool"`
+	Subnets  []struct {
+		ID   int64  `json:"id"`
+		CIDR string `json:"cidr"`
+	} `json:"subnets"`
+}
+
+func (c *Client) GetRouterNetwork(ctx context.Context, id int64) (*RouterNetwork, error) {
+	return getByID[RouterNetwork](c, ctx, fmt.Sprintf("/networks/%d", id), "network")
 }
 
 type RouterType struct {
@@ -69,27 +92,6 @@ func (c *Client) GetRouterType(ctx context.Context, id int64) (*RouterType, erro
 	return typ, nil
 }
 
-// RouterOptions decodes additional fields inside networkRouter. Core fields
-// cannot be overridden. Raw JSON preserves large IDs in type-specific options.
-func RouterOptions(raw string) (map[string]any, error) {
-	options := map[string]any{}
-	if raw != "" {
-		var fields map[string]json.RawMessage
-		if err := json.Unmarshal([]byte(raw), &fields); err != nil || fields == nil {
-			return nil, fmt.Errorf("options_json must be a JSON object")
-		}
-		for key, value := range fields {
-			options[key] = value
-		}
-	}
-	for _, key := range []string{"id", "name", "type", "site", "zone", "networkServer", "enabled"} {
-		if _, exists := options[key]; exists {
-			return nil, fmt.Errorf("options_json cannot override %q", key)
-		}
-	}
-	return options, nil
-}
-
 func (c *Client) CreateRouter(ctx context.Context, fields map[string]any) (int64, error) {
 	var response struct {
 		ID      int64 `json:"id"`
@@ -115,20 +117,6 @@ func (c *Client) GetRouter(ctx context.Context, id int64) (*Router, error) {
 	return router, nil
 }
 
-func (c *Client) UpdateRouter(ctx context.Context, id int64, name string, enabled bool) error {
-	var response struct {
-		Success bool `json:"success"`
-	}
-	err := c.put(ctx, fmt.Sprintf("/networks/routers/%d", id), map[string]any{"networkRouter": map[string]any{"name": name, "enabled": enabled}}, &response)
-	if err != nil {
-		return err
-	}
-	if !response.Success {
-		return fmt.Errorf("router update did not report success")
-	}
-	return nil
-}
-
 func (c *Client) DeleteRouter(ctx context.Context, id int64) error {
 	var response struct {
 		Success bool `json:"success"`
@@ -140,4 +128,30 @@ func (c *Client) DeleteRouter(ctx context.Context, id int64) error {
 		return fmt.Errorf("router deletion did not report success")
 	}
 	return nil
+}
+
+// WaitForRouter checks backend completion rather than trusting the create/delete acknowledgement.
+func (c *Client) WaitForRouter(ctx context.Context, id int64, deleted bool) (*Router, error) {
+	for {
+		router, err := c.GetRouter(ctx, id)
+		if deleted && IsNotFound(err) {
+			return nil, nil
+		}
+		if err != nil && (!IsNotFound(err) || deleted) {
+			return nil, err
+		}
+		if err == nil && !deleted {
+			switch strings.ToLower(router.Status) {
+			case "ok", "available", "active":
+				return router, nil
+			case "failed", "error":
+				return nil, fmt.Errorf("MTN router %d provisioning status is %q", id, router.Status)
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-time.After(2 * time.Second):
+		}
+	}
 }

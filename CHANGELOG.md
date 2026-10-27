@@ -9,10 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `mtncloud_router` for router creation, reads, name/enabled updates, deletion,
-  and import, plus `mtncloud_router_types` for account-specific type discovery.
-  Type-specific creation fields use sensitive `options_json`; changing them
-  replaces the router. Remote drift in these fields is not tracked.
+- `mtncloud_router` for MTN's neutronRouter offering, with typed resource-pool,
+  internal-subnet, and external-network inputs, import, and create/delete readiness
+  checks. Router configuration changes require replacement. The REST create request
+  includes `config.poolId` so MTN provisions the router in the selected project.
 
 
 ## [0.2.13] - 2026-06-29
