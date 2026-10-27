@@ -184,6 +184,7 @@ func (p *mtnCloudProvider) Resources(_ context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		NewInstanceResource,
 		NewNetworkResource,
+		NewRouterResource,
 		NewSecurityGroupResource,
 		NewSecurityGroupRuleResource,
 		NewStorageBucketResource,

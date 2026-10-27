@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `subnet_ids` on the `mtncloud_network` data source for attaching existing network
+  subnets to routers without hardcoding subnet IDs.
+
+- `mtncloud_router` for MTN's neutronRouter offering, with typed resource-pool,
+  internal-subnet, and external-network inputs, import, and create/delete readiness
+  checks. Router configuration changes require replacement. The REST create request
+  includes `config.poolId` so MTN provisions the router in the selected project.
+
+
 ## [0.2.13] - 2026-06-29
 
 ### Added

@@ -7,24 +7,29 @@ import (
 	"strings"
 )
 
+type NetworkSubnet struct {
+	ID int64 `json:"id"`
+}
+
 type Network struct {
-	ID           int64          `json:"id"`
-	Name         string         `json:"name"`
-	Code         string         `json:"code"`
-	DisplayName  string         `json:"displayName"`
-	Description  string         `json:"description"`
-	CIDR         string         `json:"cidr"`
-	Gateway      string         `json:"gateway"`
-	DNSPrimary   string         `json:"dnsPrimary"`
-	DNSSecondary string         `json:"dnsSecondary"`
-	VlanID       *int64         `json:"vlanId"`
-	Status       string         `json:"status"`
-	Active       *bool          `json:"active"`
-	Visibility   string         `json:"visibility"`
-	Type         map[string]any `json:"type"`
-	Zone         map[string]any `json:"zone"`
-	Site         map[string]any `json:"site"`
-	ZonePool     map[string]any `json:"zonePool"`
+	ID           int64           `json:"id"`
+	Name         string          `json:"name"`
+	Code         string          `json:"code"`
+	DisplayName  string          `json:"displayName"`
+	Description  string          `json:"description"`
+	CIDR         string          `json:"cidr"`
+	Gateway      string          `json:"gateway"`
+	DNSPrimary   string          `json:"dnsPrimary"`
+	DNSSecondary string          `json:"dnsSecondary"`
+	VlanID       *int64          `json:"vlanId"`
+	Status       string          `json:"status"`
+	Active       *bool           `json:"active"`
+	Visibility   string          `json:"visibility"`
+	Type         map[string]any  `json:"type"`
+	Zone         map[string]any  `json:"zone"`
+	Site         map[string]any  `json:"site"`
+	ZonePool     map[string]any  `json:"zonePool"`
+	Subnets      []NetworkSubnet `json:"subnets"`
 }
 
 type NetworkType struct {

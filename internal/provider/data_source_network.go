@@ -17,14 +17,15 @@ type networkDataSource struct {
 }
 
 type networkDataSourceModel struct {
-	ID      types.String `tfsdk:"id"`
-	Name    types.String `tfsdk:"name"`
-	Code    types.String `tfsdk:"code"`
-	CIDR    types.String `tfsdk:"cidr"`
-	Gateway types.String `tfsdk:"gateway"`
-	Status  types.String `tfsdk:"status"`
-	TypeID  types.Int64  `tfsdk:"type_id"`
-	CloudID types.Int64  `tfsdk:"cloud_id"`
+	ID        types.String `tfsdk:"id"`
+	Name      types.String `tfsdk:"name"`
+	Code      types.String `tfsdk:"code"`
+	CIDR      types.String `tfsdk:"cidr"`
+	Gateway   types.String `tfsdk:"gateway"`
+	Status    types.String `tfsdk:"status"`
+	TypeID    types.Int64  `tfsdk:"type_id"`
+	CloudID   types.Int64  `tfsdk:"cloud_id"`
+	SubnetIDs types.Set    `tfsdk:"subnet_ids"`
 }
 
 func NewNetworkDataSource() datasource.DataSource {
@@ -39,14 +40,15 @@ func (d *networkDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 	resp.Schema = dschema.Schema{
 		Description: "Looks up an MTN Cloud network by name.",
 		Attributes: map[string]dschema.Attribute{
-			"id":       dschema.StringAttribute{Computed: true, Description: "Numeric identifier of the network."},
-			"name":     dschema.StringAttribute{Required: true, Description: "Name of the network to look up."},
-			"code":     dschema.StringAttribute{Computed: true, Description: "Code of the network."},
-			"cidr":     dschema.StringAttribute{Computed: true, Description: "CIDR block of the network."},
-			"gateway":  dschema.StringAttribute{Computed: true, Description: "Gateway address of the network."},
-			"status":   dschema.StringAttribute{Computed: true, Description: "Current status of the network."},
-			"type_id":  dschema.Int64Attribute{Computed: true, Description: "ID of the network type."},
-			"cloud_id": dschema.Int64Attribute{Optional: true, Computed: true, Description: "Cloud/zone ID to disambiguate networks with the same name. Get it from mtncloud_group.cloud_ids."},
+			"subnet_ids": dschema.SetAttribute{Computed: true, ElementType: types.Int64Type, Description: "Morpheus subnet IDs belonging to this network. Empty when the network has no subnets. Use with mtncloud_router.internal_subnet_ids to attach all subnets of an internal network."},
+			"id":         dschema.StringAttribute{Computed: true, Description: "Numeric identifier of the network."},
+			"name":       dschema.StringAttribute{Required: true, Description: "Name of the network to look up."},
+			"code":       dschema.StringAttribute{Computed: true, Description: "Code of the network."},
+			"cidr":       dschema.StringAttribute{Computed: true, Description: "CIDR block of the network."},
+			"gateway":    dschema.StringAttribute{Computed: true, Description: "Gateway address of the network."},
+			"status":     dschema.StringAttribute{Computed: true, Description: "Current status of the network."},
+			"type_id":    dschema.Int64Attribute{Computed: true, Description: "ID of the network type."},
+			"cloud_id":   dschema.Int64Attribute{Optional: true, Computed: true, Description: "Cloud/zone ID to disambiguate networks with the same name. Get it from mtncloud_group.cloud_ids."},
 		},
 	}
 }
@@ -68,6 +70,20 @@ func (d *networkDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		resp.Diagnostics.AddError("Read MTN Cloud Network Failed", err.Error())
 		return
 	}
+
+	// The list response may omit subnets; read the full network details.
+	network, err = d.client.GetNetwork(ctx, network.ID)
+	if err != nil {
+		resp.Diagnostics.AddError("Read MTN Cloud Network Failed", err.Error())
+		return
+	}
+	subnetIDs := make([]int64, 0, len(network.Subnets))
+	for _, subnet := range network.Subnets {
+		subnetIDs = append(subnetIDs, subnet.ID)
+	}
+	subnets, diags := types.SetValueFrom(ctx, types.Int64Type, subnetIDs)
+	resp.Diagnostics.Append(diags...)
+	data.SubnetIDs = subnets
 
 	data.ID = types.StringValue(strconv.FormatInt(network.ID, 10))
 	data.Code = optionalString(network.Code)

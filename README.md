@@ -13,6 +13,7 @@ This provider covers the highest-value MTN Cloud workflows:
 - Provision compute instances using human-friendly names.
 - Manage networks (create/update/delete) using human-friendly group/zone/type/pool names.
 - Manage security groups and security group rules.
+- Manage MTN routers with resource-pool, subnet, and external-network inputs.
 - Manage S3-compatible storage buckets and archive buckets.
 
 ## Example

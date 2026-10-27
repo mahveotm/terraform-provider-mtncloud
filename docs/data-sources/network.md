@@ -35,5 +35,6 @@ data "mtncloud_network" "shared" {
 - `gateway` (String) Gateway address of the network.
 - `id` (String) Numeric identifier of the network.
 - `status` (String) Current status of the network.
+- `subnet_ids` (Set of Number) Morpheus subnet IDs belonging to this network. Empty when the network has no subnets. Use with mtncloud_router.internal_subnet_ids to attach all subnets of an internal network.
 - `type_id` (Number) ID of the network type.
 
