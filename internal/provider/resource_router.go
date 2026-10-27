@@ -48,7 +48,7 @@ func (r *routerResource) Metadata(_ context.Context, req resource.MetadataReques
 func (r *routerResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	replace := []planmodifier.String{stringplanmodifier.RequiresReplace()}
 	resp.Schema = rschema.Schema{
-		Description: "Manages an MTN Cloud router using the MTN neutronRouter offering. Other router backends are not supported.",
+		Description: "Manages an MTN Cloud router. The MTN neutronRouter type is selected automatically.",
 		Attributes: map[string]rschema.Attribute{
 			"id":                  computedIDAttribute("Numeric router ID."),
 			"name":                rschema.StringAttribute{Required: true, PlanModifiers: replace, Description: "Router name. Changes replace the router."},
@@ -57,7 +57,7 @@ func (r *routerResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"cloud_id":            rschema.Int64Attribute{Optional: true, Computed: true, Validators: []validator.Int64{int64validator.AtLeast(1)}, PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace(), int64planmodifier.UseStateForUnknown()}, Description: "MTN Cloud ID. Inferred only when the group has exactly one cloud. Changes replace the router."},
 			"enabled":             rschema.BoolAttribute{Optional: true, Computed: true, Default: booldefault.StaticBool(true), Description: "Whether the router is enabled at creation. Changes replace the router.", PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()}},
 			"resource_pool":       rschema.StringAttribute{Optional: true, Computed: true, PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace(), stringplanmodifier.UseStateForUnknown()}, Description: "MTN resource pool name/code, inherited from the provider when omitted. Changes replace the router."},
-			"internal_subnet_ids": rschema.SetAttribute{Required: true, ElementType: types.Int64Type, PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}, Description: "Morpheus internal subnet IDs to attach. Changes replace the router."},
+			"internal_subnet_ids": rschema.SetAttribute{Required: true, ElementType: types.Int64Type, PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()}, Description: "Morpheus internal subnet IDs to attach, available from mtncloud_network.subnet_ids. The subnets must belong to the selected resource pool. Changes replace the router."},
 			"external_network_id": rschema.Int64Attribute{Optional: true, Validators: []validator.Int64{int64validator.AtLeast(1)}, PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()}, Description: "Optional Morpheus external network ID. Changes replace the router."},
 			"status":              rschema.StringAttribute{Computed: true, Description: "Observed MTN router status. Creation waits up to five minutes for readiness."},
 			"external_ip":         rschema.StringAttribute{Computed: true, Description: "External IP, if assigned."},
