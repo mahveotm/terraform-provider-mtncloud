@@ -156,5 +156,4 @@ for uniformity.
 
 No subproviders, no schema code generation, and no generic CRUD scaffold. They suit
 a multi-service, 100+-resource provider (see the sibling `terraform-provider-hpe`),
-not this one. Revisit only if a second service domain or a much larger surface makes
-the boilerplate genuinely expensive.
+not this one.
