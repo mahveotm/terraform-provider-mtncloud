@@ -86,14 +86,7 @@ func (r *routerResource) ValidateConfig(ctx context.Context, req resource.Valida
 }
 func (r *routerResource) createFields(ctx context.Context, data *routerModel) (map[string]any, error) {
 	fields := map[string]any{}
-	groupName := data.Group.ValueString()
-	if groupName == "" && r.defaults != nil {
-		groupName = r.defaults.Group
-	}
-	if groupName == "" {
-		return nil, fmt.Errorf("set group on the router or provider")
-	}
-	group, err := r.client.GetGroupByName(ctx, groupName)
+	scope, err := resolveRouterScope(ctx, r.client, r.defaults, data.Group.ValueString(), data.ResourcePool.ValueString(), data.CloudID.ValueInt64())
 	if err != nil {
 		return nil, err
 	}
@@ -106,53 +99,19 @@ func (r *routerResource) createFields(ctx context.Context, data *routerModel) (m
 	}
 	fields["name"] = data.Name.ValueString()
 	fields["type"] = map[string]any{"id": routerType.ID}
-	fields["site"] = map[string]any{"id": group.ID}
+	fields["site"] = map[string]any{"id": scope.Group.ID}
 	fields["enabled"] = data.Enabled.ValueBool()
-	data.Group = types.StringValue(groupName)
-	cloudID := data.CloudID.ValueInt64()
-	if cloudID == 0 {
-		if len(group.CloudIDs) != 1 {
-			return nil, fmt.Errorf("set cloud_id explicitly: group has %d clouds", len(group.CloudIDs))
-		}
-		cloudID = group.CloudIDs[0]
-	}
-	found := false
-	for _, id := range group.CloudIDs {
-		if id == cloudID {
-			found = true
-		}
-	}
-	if !found {
-		return nil, fmt.Errorf("cloud_id %d is not attached to group %q", cloudID, groupName)
-	}
-	fields["zone"] = map[string]any{"id": cloudID}
-	data.CloudID = types.Int64Value(cloudID)
+	data.Group = types.StringValue(scope.Group.Name)
+	fields["zone"] = map[string]any{"id": scope.CloudID}
+	data.CloudID = types.Int64Value(scope.CloudID)
 	data.Type = types.StringValue(client.MTNRouterTypeCode)
+	fields["poolId"] = scope.Pool.Code
+	// The REST provisioning backend reads the project from config.poolId.
+	fields["config"] = map[string]any{"poolId": scope.Pool.Code}
 	poolName := data.ResourcePool.ValueString()
-	if poolName == "" && r.defaults != nil {
+	if poolName == "" {
 		poolName = r.defaults.ResourcePool
 	}
-	if poolName == "" {
-		return nil, fmt.Errorf("set resource_pool on the router or provider")
-	}
-	pools, err := r.client.ListResourcePools(ctx, cloudID, group.ID)
-	if err != nil {
-		return nil, err
-	}
-	var poolID int64
-	for _, pool := range pools {
-		if pool.Name == poolName || pool.Code == poolName {
-			poolID = pool.ID
-			break
-		}
-	}
-	if poolID == 0 {
-		return nil, fmt.Errorf("resource pool %q not found in selected cloud", poolName)
-	}
-	fields["poolId"] = fmt.Sprintf("pool-%d", poolID)
-	// The REST provisioning backend reads the project from config.poolId.
-	// A top-level poolId alone creates a failed local router record.
-	fields["config"] = map[string]any{"poolId": fmt.Sprintf("pool-%d", poolID)}
 	data.ResourcePool = types.StringValue(poolName)
 	var ids []int64
 	if diags := data.SubnetIDs.ElementsAs(ctx, &ids, false); diags.HasError() {

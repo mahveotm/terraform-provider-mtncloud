@@ -2,12 +2,12 @@
 page_title: "mtncloud_network Data Source - mtncloud"
 subcategory: "Networking"
 description: |-
-  Looks up an MTN Cloud network by name.
+  Looks up an MTN Cloud network by name. For router public gateways, use mtncloud_external_network instead.
 ---
 
 # mtncloud_network (Data Source)
 
-Looks up an MTN Cloud network by name.
+Looks up an MTN Cloud network by name. For router public gateways, use mtncloud_external_network instead.
 
 ## Example Usage
 

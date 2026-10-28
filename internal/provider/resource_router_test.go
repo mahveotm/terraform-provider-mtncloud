@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"regexp"
+	"strings"
 	"sync"
 	"testing"
 
@@ -16,6 +19,10 @@ import (
 func TestRouterLifecycleWithMockAPI(t *testing.T) {
 	t.Setenv("MTN_CLOUD_USERNAME", "")
 	t.Setenv("MTN_CLOUD_PASSWORD", "")
+	externalOptions, err := os.ReadFile("testdata/external_network_options.json")
+	if err != nil {
+		t.Fatal(err)
+	}
 	var mu sync.Mutex
 	name := "app"
 	enabled := true
@@ -37,13 +44,19 @@ func TestRouterLifecycleWithMockAPI(t *testing.T) {
 			if r.URL.Query().Get("zoneId") != "8" {
 				t.Error("network lookup must be scoped to cloud 8")
 			}
-			if r.URL.Query().Get("name") == "public-network-01" {
-				fmt.Fprint(w, `{"networks":[{"id":34,"name":"public-network-01"}]}`)
-			} else {
+			if r.URL.Query().Get("name") == "app-net" {
 				fmt.Fprint(w, `{"networks":[{"id":7,"name":"app-net"}]}`)
+			} else {
+				fmt.Fprint(w, `{"networks":[]}`)
 			}
-		case "GET /api/networks/34":
-			fmt.Fprint(w, `{"network":{"id":34,"name":"public-network-01","zone":{"id":8},"subnets":[]}}`)
+		case "GET /api/options/openstackExternalNetworks":
+			query := r.URL.Query()
+			for key, value := range map[string]string{"router.zone.id": "8", "router.site.id": "4", "router.poolId": "pool-208", "routerType.id": "2"} {
+				if query.Get(key) != value {
+					t.Errorf("external network query %s = %q, want %q", key, query.Get(key), value)
+				}
+			}
+			_, _ = w.Write(externalOptions)
 		case "GET /api/networks/7":
 			fmt.Fprint(w, `{"network":{"id":7,"name":"app-net","zone":{"id":8},"zonePool":{"id":208,"name":"project"},"subnets":[{"id":9,"cidr":"10.1.0.0/24"}]}}`)
 		case "POST /api/networks/routers":
@@ -89,15 +102,16 @@ data "mtncloud_network" "app" {
  cloud_id = 8
 }
 
-data "mtncloud_network" "public" {
+data "mtncloud_external_network" "public" {
  name = "public-network-01"
- cloud_id = 8
 }
+
+data "mtncloud_external_networks" "available" {}
 
 resource "mtncloud_router" "app" {
  name = %q
  internal_subnet_ids = data.mtncloud_network.app.subnet_ids
- external_network_id = tonumber(data.mtncloud_network.public.id)
+ external_network_id = tonumber(data.mtncloud_external_network.public.id)
  enabled = %t
 
 }
@@ -109,8 +123,10 @@ resource "mtncloud_router" "app" {
 			{Config: config("app", true), Check: resource.ComposeTestCheckFunc(resource.TestCheckResourceAttr("mtncloud_router.app", "id", "42"), resource.TestCheckResourceAttr("mtncloud_router.app", "cloud_id", "8"), resource.TestCheckResourceAttr("mtncloud_router.app", "group", "group"),
 				resource.TestCheckResourceAttr("data.mtncloud_network.app", "subnet_ids.#", "1"),
 				resource.TestCheckTypeSetElemAttr("data.mtncloud_network.app", "subnet_ids.*", "9"),
-				resource.TestCheckResourceAttr("data.mtncloud_network.public", "subnet_ids.#", "0"))},
+				resource.TestCheckResourceAttr("data.mtncloud_external_network.public", "id", "34"),
+				resource.TestCheckResourceAttr("data.mtncloud_external_networks.available", "networks.#", "4"))},
 			{ResourceName: "mtncloud_router.app", ImportState: true, ImportStateVerify: true},
+			{Config: strings.Replace(config("app", true), `name = "public-network-01"`, `name = "missing-network"`, 1), ExpectError: regexp.MustCompile("MTN External Network Not Found")},
 		},
 	})
 }
