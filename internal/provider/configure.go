@@ -34,10 +34,10 @@ func (b *resourceBase) Configure(_ context.Context, req resource.ConfigureReques
 	b.defaults = data
 }
 
-// dataSourceBase is embedded by every data source. Data sources only need the
-// client, never provider defaults.
+// dataSourceBase provides the client and optional provider defaults to data sources.
 type dataSourceBase struct {
-	client *client.Client
+	client   *client.Client
+	defaults *mtnCloudProviderData
 }
 
 func (b *dataSourceBase) Configure(_ context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
@@ -50,6 +50,7 @@ func (b *dataSourceBase) Configure(_ context.Context, req datasource.ConfigureRe
 		return
 	}
 	b.client = apiClient
+	b.defaults, _ = configuredProvider(req.ProviderData)
 }
 
 // configuredProvider returns the full shared provider data (client + defaults).

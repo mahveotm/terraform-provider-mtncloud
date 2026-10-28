@@ -112,6 +112,13 @@ terraform {
 }
 ```
 
+## Router gateways
+
+External router gateways can be discovered by name with
+`mtncloud_external_network`, or listed with `mtncloud_external_networks`. See the
+[router example](examples/resources/mtncloud_router/README.md) for the complete
+workflow using existing networks.
+
 ## Import
 
 ```bash

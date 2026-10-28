@@ -217,6 +217,8 @@ func (p *mtnCloudProvider) DataSources(_ context.Context) []func() datasource.Da
 		NewGroupDataSource,
 		NewInstanceTypeDataSource,
 		NewNetworkDataSource,
+		NewExternalNetworkDataSource,
+		NewExternalNetworksDataSource,
 		NewResourcePoolDataSource,
 		NewSecurityGroupDataSource,
 		NewServicePlanDataSource,

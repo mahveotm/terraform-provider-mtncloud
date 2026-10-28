@@ -38,7 +38,7 @@ func (d *networkDataSource) Metadata(_ context.Context, req datasource.MetadataR
 
 func (d *networkDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = dschema.Schema{
-		Description: "Looks up an MTN Cloud network by name.",
+		Description: "Looks up an MTN Cloud network by name. For router public gateways, use mtncloud_external_network instead.",
 		Attributes: map[string]dschema.Attribute{
 			"subnet_ids": dschema.SetAttribute{Computed: true, ElementType: types.Int64Type, Description: "Morpheus subnet IDs belonging to this network. Empty when the network has no subnets. Use with mtncloud_router.internal_subnet_ids to attach all subnets of an internal network."},
 			"id":         dschema.StringAttribute{Computed: true, Description: "Numeric identifier of the network."},

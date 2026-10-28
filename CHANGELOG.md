@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `mtncloud_external_network` and `mtncloud_external_networks` for discovering
+  router gateways by name or listing available names and IDs within a group,
+  cloud, and resource pool. Group and pool can inherit provider defaults.
+
+### Fixed
+
+- Router examples now discover public gateways through MTN's external-network
+  options instead of the tenant network endpoint, which may not expose them.
+
 ## [0.2.15] - 2026-10-27
 
 ### Changed
